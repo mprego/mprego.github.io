@@ -54,6 +54,8 @@ baseurl: ""
 #
 
 markdown: kramdown
+kramdown: 
+  extensions: ["tables"]
 highlighter: rouge
 permalink: /:title/
 
