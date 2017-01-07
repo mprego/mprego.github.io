@@ -10,7 +10,7 @@ Daily fantasy sports has become become increasingly popular, which is great beca
 ### Data Source
 Two sites were used to gather data for this project.  First, Basketball Reference was used to get past game and player data as well as the games for the current day.  Second, FanDuel was used to collect the daily player lineups, which had two valuable pieces of information: salary and position.  These two pieces of data weren't used for predictions, but were necessary for choosing the optimal fantasy lineup.
 
-Scraping data from these sites was difficult because the daily pace of fantasy competitions made it imperative that data was refreshed every day.  To accomplish this workflow, a Luigi pipeline was built that scraped the data daily and updated a file of historical data.  The code used for scraping can be found [here](addlink)
+Scraping data from these sites was difficult because the daily pace of fantasy competitions made it imperative that data was refreshed every day.  To accomplish this workflow, a Luigi pipeline was built that scraped the data daily and updated a file of historical data.  The code used for scraping can be found [here](https://github.com/mprego/NBA_Player/blob/master/src/data/Scraping.py)
 
 ### Model Building
 In this project, there are two models: one to predict the daily fantasy points per player and one to choose the optimal lineup.  
@@ -57,9 +57,9 @@ To make this algorithm feasible, I'd need to cut down the potential number of pl
 3. Look at the next player on the sorted list.  If the salary was lower than the salary of the player in the subset, add this person to the subset
 4. Repeat this comparison until I ran out of players
 
-In essence, my subset was the frontier of players, which looks like this:
+In essence, my subset was the frontier of players who have the best Salary to Fantasy Points efficiency.  Since every position other than Center requires two selections, I repeated this process after removing the first group of players.  This way, for each position, I would have a subset that included the two most efficient Salary to Fantasy Points players at each Salary level.  Here's what the selection of players looked like for point guards playing on 12/5/2016:
 
-(insert graph of frontier)
+{% include frontier.html %}
 
 Using this strategy to cut down the number of potential players brought down the number of potential lineups, but not by enough to test every one.  Even though it wouldn't be 100% accurate nor efficient, I decided to run simulations to pick the best lineup.  
 
