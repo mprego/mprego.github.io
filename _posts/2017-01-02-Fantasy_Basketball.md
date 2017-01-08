@@ -30,24 +30,26 @@ Second, I also tested how many models to build.  In Fanduel's games, fantasy poi
 
 With these two sets of options and the model pipeline described above, I created 4 models and compared the MSE of the fantasy point predictions below:
 
-FD 5: 64.7
-FD 10: 64.5
-all vars 5: 67.1
-all vars 10: 64.0
+~~~~
+Just fantasy points with past 5 games: 64.7
+Just fantasy points with past 5 games: 64.5
+All variables with past 5 games: 67.1
+All variables with past 10 games: 64.0
+~~~~
 
 Based on this data, it looks like there isn't a huge difference among the four models, but the lowest score does belong to the model predicting all stats with the past 10 games.  
 
-### Choosing the Optimal Fantasy Lineup
+#### Choosing the Optimal Fantasy Lineup
 Once I had my predictions, I still had a non-trivial task: choose which players to put in my daily fantasy lineup.  On Fanduel, there are two constraints:
 1. Position: According to positions defined by Fanduel, my lineup had to consist of 2 PGs, 2 SGs, 2 SFs, 2 PFs, and 1 Center
 2. Salary: According to salaries from Fanduel, my lineup had to be at or below the $60,000 daily budget
 
-Given these two constraints and my objective to maximize the number of points, I had to build an algorithm.  Given the complexity of the two constraints, I tried to build an algorithm that chose the best lineup through trial and error.  The easiest and sure-fire way of finding the optimal lineup would've been to test every possible lineup.  This was not feasible, however.  In a typical day, there are about 200 players active, meaning that there's about 40 possible players for each position.  Using combinatinatorial math, we have:
+Given these two constraints and my objective to maximize the number of points, I had to build an algorithm.  Given the complexity of the two constraints, I tried to build an algorithm that chose the best lineup through trial and error.  The easiest and sure-fire way of finding the optimal lineup would've been to test every possible lineup.  This was not feasible, however.  In a typical day, there are about 200 players active, meaning that there's about 50 possible players for each position.  Using combinatinatorial math, we have:
 
 ~~~~
-Number of Possible Lineups = (40 Choose 2) * (40 Choose 2) * (40 Choose 2) * (40 Choose 2) * (40 Choose 1)
-Number of Possible Lineups = (780)^4 * 40
-Number of Possible Lineups = 1.48 * 10^13
+Number of Possible Lineups = (50 choose 2) * (50 Choose 2) * (50 Choose 2) * (50 Choose 2) * (50 Choose 1)
+Number of Possible Lineups = (1225)^4 * 50
+Number of Possible Lineups = 1.13 * 10^14
 ~~~~
 
 To make this algorithm feasible, I'd need to cut down the potential number of players.  To do this, I only considered a subset of weakly dominant players with respect to fantasy points and salary.  To pick this subset, my logic was:
@@ -61,88 +63,31 @@ In essence, my subset was the frontier of players who have the best Salary to Fa
 
 {% include frontier.html %}
 
-Using this strategy to cut down the number of potential players brought down the number of potential lineups, but not by enough to test every one.  Even though it wouldn't be 100% accurate nor efficient, I decided to run simulations to pick the best lineup.  
-
-(end here)
-
-### Variable Selection
-To use a team's Four Factors in past games as a variable, I needed to decide how many past games to consider.  On one hand, picking a lot of past games would help reduce the variance of this variable for a team.  But a high number of past games would also restrict the eligible games for the model to predict as the first few games of the season would not have enough past games.  On the other hand, picking a smaller number of past games could capture short-term swings in a team's performance and allow the model to predict more games earlier in the season.  To determine the exact number, I tested these variables when cross-validating the model.
-
-I also added a few other variables that seemed to make intuitive sense. :
-
-- Back to Back Games: Teams often are tired in their second game of a back-to-back schedule, causing them to struggle
-- Win % for last 5 and 15 games: This metric doesn't add a ton of information over the Four Factors, but its inclusion might be able to reveal a team's instincts and willingness to win
-- Dunk Score: As mentioned in this [post](http://mprego.github.io/Dunks/), the Dunk Score has some predictive power in predicting game outcomes
-
-Next, I used all of these variables with two types of models: a Support Vector Machine (SVM) model and a Random Forest model.  For classification problems with lots of variables, these models perform well.  Using 10-fold cross validation, I acheived the following accuracies:
-
-
-Only past 5 game variables:
-
-**SVM**:
+Using this strategy to cut down the number of potential players brought down the number of potential lineups.  In this example, I reduced the number of points guards from 51 to 16.  Now we can recalculate the number of possible combinations:
 
 ~~~~
-0.642045454545
-{'kernel': 'poly', 'C': 5, 'degree': 1}
+Number of Possible Lineups = (16 choose 2) * (18 choose 2) * (21 choose 2) * (16 choose 2) * (6 choose 1)
+Number of Possible Lineups = 120 * 153 * 210 * 120 * 6
+Number of Possible Lineups = 2.78 * 10^9
 ~~~~
 
-**Random Forest**:
+Although is a large reduction, it'll still take a while to run through every single possible combination.  To speed up the process, I decided to run simulations to pick the best lineup.  In this case, I ran 1,000 simulations and picked the lineup with the highest predicted fantasy points that was at or under budget ($60K for Fanduel).
+
+### Comparing Model Performance vs FanDuel's Model and Historical Data
+Now that we have a working model to predict fantasy points and create a fantasy lineup, we can compare how this lineup would've done on Fanduel.  For games from 12/5/2016 to 12/29/2016, I compared my best performing model (the model that predicts all variables with the past 10 games) to Fanduel's own model and to the actual historical data.
+
+For those range of dates, here are the average fantasy points per lineup:
 
 ~~~~
-0.632575757576
-{'n_estimators': 30, 'criterion': 'entropy'}
+Model with all variables using past 10 games: 270.4
+Fanduel's predictions: 269.0
+Actual: 354.0
 ~~~~
 
-
-Only past 15 game variables:
-
-**SVM**:
-
-~~~~
-0.660984848485
-{'kernel': 'linear', 'C': 1, 'degree': 1}
-~~~~
-
-**Random Forest**:
-
-~~~~
-0.655303030303
-{'n_estimators': 50, 'criterion': 'gini'}
-~~~~
+{% include score_comps.html %}
 
 
-Including all past games within the season:
+### Conclusion and Next Steps
+The results leave something to be desired.  Compared to the Fanduel's own predictions, there isn't much of a lift with my model.  With such a small difference, the models are virtually tied in terms of performance.  
 
-**SVM**:
-
-~~~~
-0.673295454545
-{'kernel': 'rbf', 'C': 10, 'degree': 1}
-~~~~
-
-**Random Forest**:
-
-~~~~
-0.648674242424
-{'n_estimators': 40, 'criterion': 'gini'}
-~~~~
-
-
-All of the variables:
-
-**SVM**:
-
-~~~~
-0.683712121212
-{'kernel': 'linear', 'C': 0.5, 'degree': 1}
-~~~~
-
-**Random Forest**
-
-~~~~
-0.666666666667
-{'n_estimators': 40, 'criterion': 'entropy'}
-~~~~
-
-
-Based on these results, it looks like including a variety of past n games produces the most accurate model.  Most of this accuracy appears to be driven by the variables that include all past games.  In fact, the model based on those variables alone nearly achieved the same accuracy as the model with every variable.  
+Compared to the actual data, there is a large gap.  Some gap is always to be expected since the data cannot account for every factor that affects a player's performance.  The gap is so large though, that I question whether the models used are appropriate for this prediction.  To predict a player's fantasy points, we used regression that made sure the model was unbiased and optimized to minimize the MSE for all data points.  In this final comparison, however, we aren't looking at all of the data points; we're only looking at the players that have the highest scores for a given budget.  Since only those players show up in the end result, it may make more sense to fit the model to those high performing outliers.  In that case, overall accuracy doesn't matter as much as the accuracy for those unlikely events.  Predicting those breakout outlier performances can lead to a lineup closer to reality, meaning higher points and better success.
