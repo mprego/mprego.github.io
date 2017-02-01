@@ -49,15 +49,7 @@ General, Predict all variables, 5 games | 77.9
 General, Predict all variables, 10 games | 78.7
 Personalized, Predict all variables, 10 games | 78.5
 
-Despite the large differences in building these models, it looks like there isn't a huge difference among them.  Where there is a difference is in simplicity.  The generalized models are simpler and the models predicting just FD fantasy points are even simpler.  Since there isn't an observable performance difference, it makes sense to use the simplest model, which happens to be the general model predicting just FD fantasy points using the past 10 games.  
-
-This model ended up using this type of regression along with these parameters:
-
-~~~~
-Centering and scaling the variables
-Choosing the 10 best variables
-GBM with a max depth of 3 and a learning rate of 0.1
-~~~~
+Despite the large differences in building these models, it looks like there isn't a huge difference among them.  This is somewhat surprising given the wide range in model complexity.  Since it's tough to differentiate the models in this step, I'll test each model out later in the process.
 
 #### Choosing the Optimal Fantasy Lineup
 Once I had my predictions, I still had a non-trivial task: choosing which players to put in my daily fantasy lineup.  On Fanduel, there are two constraints:
@@ -100,22 +92,30 @@ Although is a large reduction (I reduced the number by 99.998%), it'll still tak
 
 
 ### Comparing Model Performance vs FanDuel's Model and Historical Data
-Now that we have a working model to predict fantasy points and create a fantasy lineup, we can compare how this lineup would've done on Fanduel.  For games from 12/5/2016 to 12/29/2016, I compared my best performing model (the model that predicts all variables with the past 10 games) to Fanduel's own model and to actual historical data.
+Now that we have working models to predict fantasy points and create a fantasy lineup, we can compare how this lineup would've done on Fanduel.  For games from 12/5/2016 to 12/20/2016, I compared my best performing model (the model that predicts all variables with the past 10 games) to Fanduel's own model and to actual historical data.
 
 For those range of dates, here are the average fantasy points per lineup:
 
-~~~~
-Model with all variables using past 10 games: 358.7
-Fanduel's predictions: 274.5
-Actual: 267.6
-~~~~
+Model Description | Average FD Lineup Points
+------------ | -------------
+General, Predict just FD, 5 games | 257
+General, Predict just FD, 10 games | 267
+General, Predict all variables, 5 games | 252
+General, Predict all variables, 10 games | 262
+Personalized, Predict all variables, 10 games | 261
+Fanduel's predictions | 278
+Actual | 359
+
+Here how two of my best performing models, the generalized model predicting just FD points with 10 games and the personalized model predicting all variables with 10 games compare to Fanduel's predictions and the actual data over the month of December:
 
 {% include score_comps.html %}
 
 
 ### Conclusion and Next Steps
-The results leave something to be desired.  Compared to Fanduel's own predictions, there isn't much of a lift with my model.  With such a small difference, the models are virtually tied in terms of performance.  The only clear advantage my model has over Fanduel's predictions is that my model is more consistent with a standard deviation of 29.4 vs 36.2.  A more consistent model should make my lineup competitive in more competitions.
+The results leave something to be desired.  Compared to Fanduel's own predictions, my model is equal at best in terms of accuracy and consistency.  My most accurate model (general model predicting just FD points with 10 games) came closest to beating Fanduel's model, but was inconsistent.  My other models tended to be more consistent, but didn't come close to beating Fanduel's model.
 
-Compared to the actual data, there is a large gap.  The gap is so large that I question whether my model methodology is appropriate for this prediction.  To predict a player's fantasy points, I used regression that made sure the model was unbiased and optimized to minimize the MSE for all data points.  When selecting the lineup, however, we aren't looking at all of the data points; we're only looking at the players that have the highest scores for a given budget.  Consequently, it may make more sense to fit the model to those high performing outliers.  In that case, overall accuracy doesn't matter as much as the accuracy for those unlikely events.  Predicting those breakout outlier performances can lead to a lineup closer to reality, meaning higher points and better success.
+Compared to the actual data, there is a large gap regardless of the model.  The gap is so large that I question whether my basic model methodology is appropriate for this prediction.  To predict a player's fantasy points, I used regression that made sure the model was unbiased and optimized to minimize the MSE for all data points.  When selecting the lineup, however, we aren't looking at all of the data points; we're only looking at the players that have the highest scores for a given budget.  Consequently, only a small subset of predictions are vital to picking the best lineup.  Perhaps it makes more sense to build a model that narrowly focuses on this objective, instead of broadly focusing on minimizing error for all players.  
+
+The true test of these models that I was unable to perform was to pit them against real competition.  My best proxy for competition was the lineup achieved using actual data and the general consensus online that achieving 300 fantasy points usually puts you in the top half of the competition.  However, this benchmark is just an assumption and deserves to be tested out as well.  
 
 ****
