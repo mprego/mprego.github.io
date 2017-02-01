@@ -36,24 +36,27 @@ Second, I also tested how many models to build.  On Fanduel, fantasy points are 
 
 I could either model each of these components separately or just model the total fantasy points.  Again, the best method isn't clear immediately.  Building models for each component may result in more personalized models for each player, leading to more accurate fantasy point predictions.  On the other hand, building models for just fantasy points may lead to a more robust model, since many of the components are not independent.  For example, if a player scores an unusually higher number of points, their assist numbers may suffer.
 
-With these two sets of options and the model pipeline described above, I created 4 models.  Below are the MSE of the fantasy point predictions for each model:
+I also had to decide whether to build personalized models for each player or one general model for all players.  With the personalized models, I could capture more individual behavior and insights into the model.  This could lead to more accurate predictions, especially for players with lots of data.  The downside, however, is that there may not be enough data to build a robust model for every player and that this method requires a lot more processing power to build and score multiple models.
+
+With all of these possible options, I decided to make my decision based on real performance.  After building each model described above using data from October 25, 2016 and December 4, 2016, I scored the model on a test sample consisting of games from December 5, 2016 to December 20, 2016.  Here are the results:
+
+
+Model Description | MSE for FD points
+------------ | -------------
+General, Predict just FD, 5 games | 78.1
+General, Predict just FD, 10 games | 77.4
+General, Predict all variables, 5 games | 77.9
+General, Predict all variables, 10 games | 78.7
+Personalized, Predict all variables, 10 games | 78.5
+
+Despite the large differences in building these models, it looks like there isn't a huge difference among them.  Where there is a difference is in simplicity.  The generalized models are simpler and the models predicting just FD fantasy points are even simpler.  Since there isn't an observable performance difference, it makes sense to use the simplest model, which happens to be the general model predicting just FD fantasy points using the past 10 games.  
+
+This model ended up using this type of regression along with these parameters:
 
 ~~~~
-Just fantasy points with past 5 games: 64.7
-Just fantasy points with past 5 games: 64.5
-All variables with past 5 games: 67.1
-All variables with past 10 games: 64.0
-~~~~
-
-Based on this data, it looks like there isn't a huge difference among the four models, but the lowest score does belong to the model predicting all stats with the past 10 games.  For simplicity, I decided to use that model for the rest of the process.  Here are the model parameters for each component:
-
-~~~~
-Points: Ridge Regression with alpha of 1 and 3 best features
-Rebounds: Ridge Regression with alpha of 10 and 3 best features
-Assists: Ridge Regression with alpha of 1 and 3 best features
-Blocks: Ridge Regression with alpha of 10 and 3 best features
-Steals: Ridge Regression with alpha of 1 and 3 best features
-Turnovers: Ridge Regression with alpha of 1 and 3 best features
+Centering and scaling the variables
+Choosing the 10 best variables
+GBM with a max depth of 3 and a learning rate of 0.1
 ~~~~
 
 #### Choosing the Optimal Fantasy Lineup
@@ -102,9 +105,9 @@ Now that we have a working model to predict fantasy points and create a fantasy 
 For those range of dates, here are the average fantasy points per lineup:
 
 ~~~~
-Model with all variables using past 10 games: 270.4
-Fanduel's predictions: 269.0
-Actual: 354.0
+Model with all variables using past 10 games: 358.7
+Fanduel's predictions: 274.5
+Actual: 267.6
 ~~~~
 
 {% include score_comps.html %}
