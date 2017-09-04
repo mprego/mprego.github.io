@@ -106,7 +106,7 @@ Personalized, Predict all variables, 10 games | 261
 Fanduel's predictions | 278
 Actual | 359
 
-Here how two of my best performing models, the generalized model predicting just FD points with 10 games and the personalized model predicting all variables with 10 games compare to Fanduel's predictions and the actual data over the month of December:
+Here's how two of my best performing models, the generalized model predicting just FD points with 10 games and the personalized model predicting all variables with 10 games compare to Fanduel's predictions and the actual data over the month of December:
 
 {% include score_comps.html %}
 
