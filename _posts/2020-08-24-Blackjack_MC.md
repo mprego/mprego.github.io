@@ -15,13 +15,13 @@ In this strategy, you look up which state you're in (based on your hand and one 
 
 Once you dive a bit deeper into these websites you may realize blackjack doesn't exactly follow the same set of rules everywhere.  Each place has its own set of house rules.  Some games differ on when a dealer will stop hitting.  In addition, some games give you the additional actions of surrender, double, and split.  And before you even draw your cards, some games give you the choice of buying insurance.  And on top of all of that, many games have differnt payouts for blackjacks.  Suddenly you realize there are countless permutations of this seemingly simple game and each one likely has a slightly different optimal strategy.
 
-Finding the optimal strategy for your given game of blackjack is now a much more difficult endeavor.  It's possible that you can find it online with some digging, but if you're not familiar with the particular website that has your version of blackjack, you may question strategy's credibility.  To be completely sure, it'd be ideal to derive the optimal strategy yourself.  While it is possible to iterate through each possible outcome and even use some probability to simplify the problem, it's also possible to derive the best strategy in a slightly more efficient and generalizable manner.  This is achievable through reinforcement learning methods.  In particular, monte carlo methods are especially well suited for blackjack since both well aligned to episodes, or independent, single instances of a game.  Monte carlo methods perform value and policy updates at the end of each episode and blackjack only reveals the reward, or payout, at the end of an episode. 
+Finding the optimal strategy for your given game of blackjack is now a much more difficult endeavor.  It's possible that you can find it online with some digging, but if you're not familiar with the particular website that has your version of blackjack, you may question strategy's credibility.  To be completely sure, it'd be ideal to derive the optimal strategy yourself.  While it is possible to iterate through each possible outcome and even use some probability to simplify the problem, it's also possible to derive the best strategy in a slightly more efficient and generalizable manner.  This is achievable through reinforcement learning methods.  In particular, monte carlo methods are especially well suited for blackjack since both well aligned to episodes, or independent, single instances of a game.  Monte carlo methods perform value and policy updates at the end of each episode and blackjack only reveals the reward, or payout, at the end of an episode.
 
 In this post, I'll experiment with a few variations of the Monte Carlo methods using a very simple version of blackjack and talk through these areas:
 
-1. Seting up the Reinforcement Problem
+1. Setting up the Reinforcement Problem
 
-2. Different Monte Carlo Methods and Settings 
+2. Different Monte Carlo Methods and Settings
 
 3. Results of Using Different Methods and Settings
 
@@ -29,9 +29,9 @@ In this post, I'll experiment with a few variations of the Monte Carlo methods u
 
 # Setting up the Reinforcement Problem
 
-In order to set up the reinforcement learning methods, it is first necessary to define a few components of reinfocement learning and show how blackjack fits into them.  
+In order to set up the reinforcement learning methods, it is first necessary to define a few components of reinforcement learning and show how blackjack fits into them.  
 
-First, let's describe the environment of the game.  In reinformcent learning problems, there's an interface between agents and the environment, where the agent is interacting and learning within some environment.  
+First, let's describe the environment of the game.  In reinforcement learning problems, there's an interface between agents and the environment, where the agent is interacting and learning within some environment.  
 
 - Agent: The agent is the learning and decision maker in the problem.  In blackjack, the agent is the player
 
@@ -41,13 +41,13 @@ Now let's briefly describe how the agent interacts within this environment by de
 
 - States: These describe unique scenarios of where the agent is within the environment.  In blackjack, this can be neatly defined as the player's hand and the dealer's card.  To transcribe that into unique entries in a table, we'll consider three variables: the sum of the player's hand (4-21), whether the player has a usable ace (0 or 1), and the dealer's card (1-10)
 
-- Actions: At each state, the agent must perform one action.  In blackjack, players often can choose to stay, hit, double down, or split.  For simplicity, we'll consider only the first two actions of staying and htiting, which we'll encode as 0 and 1.
+- Actions: At each state, the agent must perform one action.  In blackjack, players often can choose to stay, hit, double down, or split.  For simplicity, we'll consider only the first two actions of staying and hitting, which we'll encode as 0 and 1.
 
 To enable the agent to learn and act, there are typically 4 components to define in a reinforcement learning problem:
 
 1. Policy: Defines the agents way of behaving at a given time.  In blackjack, it's the strategy that the player follows based on their state (which consists of their cards and the dealer's card)
 
-2. Reward SIgnal: Defines the goal of a reinforcement learning problem.  In blackjack, it's the player's winnings or losses at the end of the game
+2. Reward Signal: Defines the goal of a reinforcement learning problem.  In blackjack, it's the player's winnings or losses at the end of the game
 
 3. Value Function: Estimates the expected rewards from that point onwards.  In blackjack, it's the expected winnings or losses for a given state
 
@@ -70,7 +70,7 @@ WIthin on-policy methods, we'll experiment with a few parameters:
 
 - Rate of exploration: How often, if at all, should the policy deviate to test different actions?
 
-Within off-policy methods, we'll experiement with a slightly different list of parameters to account for the inherent testing built into the methodology:
+Within off-policy methods, we'll experiment with a slightly different list of parameters to account for the inherent testing built into the methodology:
 
 - Initial policy actions: Does the initial actions affect convergence and performance?  Are they best set at arbitrary actions or at random?
 
@@ -88,7 +88,7 @@ Starting with the on-policy methods, I first evaluated the different policy and 
 | Random || Average || -0.126 || 20,000 Games |
 | Random || Optimistic || -0.151 || 25,000 Games |
 
-Here's what the policy looked like for the best on-policy method without any exploration: 
+Here's what the policy looked like for the best on-policy method without any exploration:
 
 ![Optimal Greedy On-Policy Results]({{ site.baseurl }}/images/blackjack_greedy_on-policy.png)
 
@@ -114,7 +114,7 @@ Separately, I evaluated different off-policy methods using different initial act
 
 * Number of games simulated through off-policy
 
-For this comparison, the weighted importance sampling with arbitrary initial actions performed the best, having the highest winning and quickest convergence of all methods considered above.  It is worth noting the difference in time to convergence between on-policy and off-policy methods.  For off-policy methods, you have to simulate games through both the on-policy and off-policy, which requires more resources and time.  Either way, this off-policy method converged much more quickly than the epsilon-based on-policy methods above.  Here's what the policy and convergence looked like for the weighted importance sampling with arbitgrary initial actions:
+For this comparison, the weighted importance sampling with arbitrary initial actions performed the best, having the highest winning and quickest convergence of all methods considered above.  It is worth noting the difference in time to convergence between on-policy and off-policy methods.  For off-policy methods, you have to simulate games through both the on-policy and off-policy, which requires more resources and time.  Either way, this off-policy method converged much more quickly than the epsilon-based on-policy methods above.  Here's what the policy and convergence looked like for the weighted importance sampling with arbitrary initial actions:
 
 ![Optimal Epsilon Greedy On-Policy Results]({{ site.baseurl }}/images/blackjack_off-policy.png)
 
@@ -136,6 +136,6 @@ Though this post showed how generalized reinforcement learning methods can be us
 
 First, the recommended strategies were not optimal.  Given the off-the-shelf policies performed better, the reinforcement learning methods likely needed more trials to converge on the optimal policy.  Due to processing power and time limitations, it's not always possible to get enough trials to reach that optimal policy.  This issue is  compounded by the next gap in game complexity.
 
-For this post, I picked a relatively simple version of blackjack that did not include any options to double down or split.  In many variations of blackjack where these actions are allowed, it is advantageous for the player to use them in particular scenarios, which enables the average winnings to slightly increase.  Furthermore, it'd be more advantageous to incoporate more data into the states that describe the remaining cards in the deck.  Many blackjack games advertise how many decks are in play (from 1 to infinite via constant shuflfling), so there's likely some additional information and value in knowing the remaining cards in the deck.
+For this post, I picked a relatively simple version of blackjack that did not include any options to double down or split.  In many variations of blackjack where these actions are allowed, it is advantageous for the player to use them in particular scenarios, which enables the average winnings to slightly increase.  Furthermore, it'd be more advantageous to incorporate more data into the states that describe the remaining cards in the deck.  Many blackjack games advertise how many decks are in play (from 1 to infinite via constant shuffling), so there's likely some additional information and value in knowing the remaining cards in the deck.
 
 ****
